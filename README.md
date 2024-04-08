@@ -20,4 +20,14 @@ python3 maze.py
 - `time`
 - `threading`
 
+###### Mazes being drawn at random 
+![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/28b9a7a6-b4a0-447f-b95b-ea697c522e1a)
 
+
+![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/025f26b0-0e13-4593-8759-548e57eebe68)
+
+##### Maze's being solved
+![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/a50370b0-da35-4af7-8f86-2b298297aa32)
+- Note red dots are for path's it's determined as incorrect/dead-ends.
+- Blue notes are progess... basically.
+  - As you can see it isn't efficient by any means. At the moment, this version just brute forces the maze...  
