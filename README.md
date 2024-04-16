@@ -28,10 +28,9 @@ python3 maze.py
 
 ##### Maze's being solved
 ![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/a50370b0-da35-4af7-8f86-2b298297aa32)
-- Note red dots are for path's it's determined as incorrect/dead-ends.
+- Red dots are for path's it's determined as incorrect/dead-ends.
 - Blue dots are progess... basically.
   - As you can see it isn't efficient by any means. At the moment, this version just brute forces the maze...
-  - A* Implementation isn't fully functioning at this time.
 
 
 ###### TODO
