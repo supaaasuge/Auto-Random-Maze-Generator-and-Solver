@@ -6,8 +6,8 @@ TODO:
 - Add A* (fix beta vs)
 - Optimize/speed improve maze drawing/generation.
 - Refactor a lotta shit. All of it to be more specific...
-  - Im lazy + works for me so...
-    - Too ez
+  - ~~Im lazy + works for me so...~~
+    - ~~Too ez~~
 
 ## Usage
 ```bash
@@ -29,5 +29,13 @@ python3 maze.py
 ##### Maze's being solved
 ![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/a50370b0-da35-4af7-8f86-2b298297aa32)
 - Note red dots are for path's it's determined as incorrect/dead-ends.
-- Blue notes are progess... basically.
-  - As you can see it isn't efficient by any means. At the moment, this version just brute forces the maze...  
+- Blue dots are progess... basically.
+  - As you can see it isn't efficient by any means. At the moment, this version just brute forces the maze...
+  - A* Implementation isn't fully functioning at this time.
+
+
+###### TODO
+- Finish A* Implementation
+- Re-factor code to help with code re-use, and split the related classes into different files so it isn't such a cluster-fuck.
+- Optimize drawing of the maze's, reduce timing and implement another process to start drawing from both ends simultaneously and "meet in the middle".
+- Add GUI Controls for resetting maze etc.
