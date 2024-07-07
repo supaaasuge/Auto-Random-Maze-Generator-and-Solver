@@ -5,7 +5,7 @@ TODO:
 - Docs
 - Add A* (fix beta vs)
 - Optimize/speed improve maze drawing/generation.
-- Refactor a lotta shit. All of it to be more specific...
+- Refactor & cleanup codebase
 
 
 ## Usage
