@@ -2,6 +2,7 @@ import threading
 from tkinter import Tk, BOTH, Canvas
 import random
 import time
+import heapq
 
 class Point:
     def __init__(self, x, y):
@@ -29,6 +30,10 @@ class Cell:
         self._y1 = None
         self._y2 = None
         self._win = win
+        self.f = float('inf')
+        self.g = float('inf')
+        self.h = float('inf')
+        self.parent = None
 
     def draw(self, x1, y1, x2, y2):
         if self._win is None: return
@@ -57,12 +62,13 @@ class Cell:
                 self._win.draw_line(Line(Point(to_x_mid, to_y_mid), Point(*line.p2.coords())), fill_color)
 
 class Window:
-    def __init__(self, width, height):
+    def __init__(self, width, height, close_event):
         self.__root = Tk()
         self.__root.title("Mystical Maze Adventure")
         self.__canvas = Canvas(self.__root, bg="ivory", height=height, width=width)
         self.__canvas.pack(fill=BOTH, expand=1)
         self.__running = True
+        self.__close_event = close_event
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
 
     def draw_dot(self, x, y, color="blue", size=4):
@@ -73,8 +79,9 @@ class Window:
         self.__root.update()
 
     def wait_for_close(self):
-        while self.__running:
+        while self.__running and not self.__close_event.is_set():
             self.redraw()
+        self.__root.destroy()
         print("The adventure ends...")
 
     def draw_line(self, line, fill_color="black"):
@@ -83,23 +90,41 @@ class Window:
     def close(self):
         self.__running = False
 
+class Scoreboard:
+    def __init__(self):
+        self.scores = {}
+
+    def update(self, maze_id, status):
+        self.scores[maze_id] = status
+        self.display()
+
+    def display(self):
+        for maze_id, status in self.scores.items():
+            print(f"Maze {maze_id}: {status}")
+
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None):
+    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None, scoreboard=None, maze_id=None):
         self._cells = []
         self._x1, self._y1 = x1, y1
         self._num_rows, self._num_cols = num_rows, num_cols
         self._cell_size_x, self._cell_size_y = cell_size_x, cell_size_y
         self._win = win
+        self._scoreboard = scoreboard
+        self._maze_id = maze_id
         self._create_cells()
         self._break_entrance_and_exit()
         self._carve_passages_from(0, 0)
         self._reset_cells_visited()
+        self.moves = 0
+        self.start_time = time.time()
 
     def _create_cells(self):
         self._cells = [[Cell(self._win) for _ in range(self._num_rows)] for _ in range(self._num_cols)]
         for i in range(self._num_cols):
             for j in range(self._num_rows):
                 self._draw_cell(i, j)
+        if self._scoreboard:
+            self._scoreboard.update(self._maze_id, "Drawing")
 
     def _draw_cell(self, i, j):
         if self._win is None: return
@@ -145,53 +170,100 @@ class Maze:
             for cell in row:
                 cell.visited = False
 
+    def heuristic(self, cell, goal):
+        return abs(cell._x1 - goal._x1) + abs(cell._y1 - goal._y1)
+
+    def get_neighbors(self, cell_x, cell_y):
+        neighbors = []
+        if cell_x > 0 and not self._cells[cell_x][cell_y].has_left_wall:
+            neighbors.append((cell_x - 1, cell_y))
+        if cell_x < self._num_cols - 1 and not self._cells[cell_x][cell_y].has_right_wall:
+            neighbors.append((cell_x + 1, cell_y))
+        if cell_y > 0 and not self._cells[cell_x][cell_y].has_top_wall:
+            neighbors.append((cell_x, cell_y - 1))
+        if cell_y < self._num_rows - 1 and not self._cells[cell_x][cell_y].has_bottom_wall:
+            neighbors.append((cell_x, cell_y + 1))
+        return neighbors
+
     def solve(self):
-        return self._solve_r(0, 0)
+        start = self._cells[0][0]
+        goal = self._cells[self._num_cols - 1][self._num_rows - 1]
 
-    def _solve_r(self, i, j):
-        if not (0 <= i < self._num_cols and 0 <= j < self._num_rows) or self._cells[i][j].visited:
-            return False
+        open_set = []
+        heapq.heappush(open_set, (0, (0, 0)))
+        came_from = {}
 
-        self._cells[i][j].visited = True
+        self._cells[0][0].g = 0
+        self._cells[0][0].f = self.heuristic(start, goal)
 
-        if (i, j) == (self._num_cols - 1, self._num_rows - 1):
-            return True
+        if self._scoreboard:
+            self._scoreboard.update(self._maze_id, "Solving")
 
-        x1, y1 = self._x1 + i * self._cell_size_x, self._y1 + j * self._cell_size_y
-        self._win.draw_dot(x1 + self._cell_size_x / 2, y1 + self._cell_size_y / 2, "blue")
-        self._animate()
+        while open_set:
+            current_f, (current_x, current_y) = heapq.heappop(open_set)
+            current = self._cells[current_x][current_y]
 
-        if i > 0 and not self._cells[i][j].has_left_wall and self._solve_r(i - 1, j):
-            return True
-        if i < self._num_cols - 1 and not self._cells[i][j].has_right_wall and self._solve_r(i + 1, j):
-            return True
-        if j > 0 and not self._cells[i][j].has_top_wall and self._solve_r(i, j - 1):
-            return True
-        if j < self._num_rows - 1 and not self._cells[i][j].has_bottom_wall and self._solve_r(i, j + 1):
-            return True
+            if (current_x, current_y) == (self._num_cols - 1, self._num_rows - 1):
+                self.reconstruct_path(came_from, current_x, current_y)
+                end_time = time.time()
+                elapsed_time = end_time - self.start_time
+                if self._scoreboard:
+                    self._scoreboard.update(self._maze_id, f"Solved in {elapsed_time:.2f} seconds in {self.moves} moves")
+                return True
 
-        self._cells[i][j].visited = False
-        self._win.draw_dot(x1 + self._cell_size_x / 2, y1 + self._cell_size_y / 2, "red")
-        self._animate()
-    
+            current.visited = True
+
+            for neighbor_x, neighbor_y in self.get_neighbors(current_x, current_y):
+                neighbor = self._cells[neighbor_x][neighbor_y]
+                if neighbor.visited:
+                    continue
+
+                tentative_g = current.g + 1
+
+                if tentative_g < neighbor.g:
+                    came_from[(neighbor_x, neighbor_y)] = (current_x, current_y)
+                    neighbor.g = tentative_g
+                    neighbor.f = neighbor.g + self.heuristic(neighbor, goal)
+
+                    if not any(neighbor.f == f and (neighbor_x, neighbor_y) == pos for f, pos in open_set):
+                        heapq.heappush(open_set, (neighbor.f, (neighbor_x, neighbor_y)))
+
+            self.moves += 1
+
         return False
-def create_and_run_maze(maze_id):
-    win = Window(800, 600)
-    maze = Maze(50, 50, 12, 16, (700 / 16), (500 / 12), win)
+
+    def reconstruct_path(self, came_from, current_x, current_y):
+        path = []
+        while (current_x, current_y) in came_from:
+            path.append((current_x, current_y))
+            current_x, current_y = came_from[(current_x, current_y)]
+        path.append((0, 0))
+        path.reverse()
+
+        for x, y in path:
+            self._win.draw_dot(self._x1 + x * self._cell_size_x + self._cell_size_x / 2,
+                               self._y1 + y * self._cell_size_y + self._cell_size_y / 2, "blue")
+            self._animate()
+
+def create_and_run_maze(maze_id, scoreboard, close_event):
+    win = Window(800, 600, close_event)
+    maze = Maze(50, 50, 12, 16, (700 / 16), (500 / 12), win, scoreboard, maze_id)
     print(f"Maze {maze_id} created")
     if maze.solve():
         print(f"Maze {maze_id} solved, the treasure is yours!")
     else:
         print(f"Maze {maze_id} remains unsolved, the treasure lost to time...")
+    close_event.set()
     win.wait_for_close()
 
-
-
 def main():
+    close_event = threading.Event()
+    scoreboard = Scoreboard()
+    mazes = 1
     threads = []
-    for i in range(4):
-        # Create a new thread for each maze instance
-        t = threading.Thread(target=create_and_run_maze, args=(i+1,))
+    # creates x maze GUI's
+    for i in range(mazes):
+        t = threading.Thread(target=create_and_run_maze, args=(i+1, scoreboard, close_event))
         t.start()
         threads.append(t)
     for t in threads:
