@@ -18,7 +18,7 @@ A* algorithm is a widely used pathfinding and graph traversal algorithm that eff
 - The start cell (0, 0) is initialized with g = 0 and f = heuristic(start, goal).
 - An open set (priority queue) is initialized with the start cell.
 2. __Heuristic Function__:
-- The heuristic function used here is the Manhattan distance, calculated as abs(cell._x1 - goal._x1) + abs(cell._y1 - goal._y1).
+- The heuristic function used here is the Manhattan distance, calculated as `abs(cell._x1 - goal._x1) + abs(cell._y1 - goal._y1)`.
 3. __Main Loop__:
 - Algorithm processes cells from the open set until it's empty or the goal is reached.
 - For the current cell, its neighbors are evaluated.
