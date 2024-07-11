@@ -1,39 +1,28 @@
 # Auto-Random-Maze-Generator-and-Solver
-Pseudorandom (deterministric, i.e., maze will  always start and end at the same two points) maze generator + solver. To solve the maze, currently it just brute force's the maze pretty much. However the end goal of this project is to implement the A* pathfinding algorithm successfully. 
 
-TODO:
-- Docs
-- Add A* (fix beta vs)
-- Optimize/speed improve maze drawing/generation.
-- Refactor & cleanup codebase
-
+Pseudorandom maze generator + solver. Start & End points always remain the same. To solve the maze, the A* pathfinding algorithm is used.
+Once solved, total number of moves and time lapsed will be printed to the terminal, and the fastest posasible path from start to finish will be drawn.
 
 ## Usage
+
 ```bash
 python3 maze.py
 ```
 
-###### Requirements
-- `tkinter`
-- `random`
-- `time`
-- `threading`
 
-###### Mazes being drawn at random 
-![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/28b9a7a6-b4a0-447f-b95b-ea697c522e1a)
+### Implementation of A* Pathfinding Algorithm
 
+A* algorithm is a widely used pathfinding and graph traversal algorithm that efficiently finds the shortest path from a start node to a goal node. It combines Dijkstra's algorithm and greedy Best-First-Search by using a heuristic to guide its search.
 
-![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/025f26b0-0e13-4593-8759-548e57eebe68)
-
-##### Maze's being solved
-![image](https://github.com/supaaasuge/Auto-Random-Maze-Generator-and-Solver/assets/158092262/a50370b0-da35-4af7-8f86-2b298297aa32)
-- Red dots are for path's it's determined as incorrect/dead-ends.
-- Blue dots are progess... basically.
-  - As you can see it isn't efficient by any means. At the moment, this version just brute forces the maze...
-
-
-###### TODO
-- Finish A* Implementation
-- Re-factor code to help with code re-use, and split the related classes into different files so it isn't such a cluster-fuck.
-- Optimize drawing of the maze's, reduce timing and implement another process to start drawing from both ends simultaneously and "meet in the middle".
-- Add GUI Controls for resetting maze etc.
+1. __Initialization__:
+- The start cell (0, 0) is initialized with g = 0 and f = heuristic(start, goal).
+- An open set (priority queue) is initialized with the start cell.
+2. __Heuristic Function__:
+- The heuristic function used here is the Manhattan distance, calculated as abs(cell._x1 - goal._x1) + abs(cell._y1 - goal._y1).
+3. __Main Loop__:
+- Algorithm processes cells from the open set until it's empty or the goal is reached.
+- For the current cell, its neighbors are evaluated.
+- For each neighbor, the tentative cost `g` is calculated as `current+1`.
+- If the tentative cost is lower than the neighbor's current cost, the neighbor's cost is updated, and it's added to the open set.
+4. __Path Reconstruction__
+- Once the goal cell is reach, the path is reconstructed by tracing back from the goal to the start using the `came_from` dictionary.
