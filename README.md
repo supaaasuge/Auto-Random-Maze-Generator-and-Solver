@@ -26,3 +26,8 @@ A* algorithm is a widely used pathfinding and graph traversal algorithm that eff
 - If the tentative cost is lower than the neighbor's current cost, the neighbor's cost is updated, and it's added to the open set.
 4. __Path Reconstruction__
 - Once the goal cell is reach, the path is reconstructed by tracing back from the goal to the start using the `came_from` dictionary.
+
+
+Picture example:
+
+![image](https://github.com/user-attachments/assets/9a9a9a96-4ba0-4622-896b-afc6ace26faf)
