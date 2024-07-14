@@ -1,7 +1,7 @@
 # Auto-Random-Maze-Generator-and-Solver
 
 Pseudorandom maze generator + solver. Start & End points always remain the same. To solve the maze, the A* pathfinding algorithm is used.
-Once solved, total number of moves and time lapsed will be printed to the terminal, and the fastest posasible path from start to finish will be drawn.
+Once solved, total number of moves and time lapsed will be printed to the terminal, and the fastest possible path from start to finish will be drawn.
 
 ## Usage
 
